@@ -7,6 +7,9 @@ import { join } from 'path';
 import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
 import { PermissionModule } from './permission/permission.module';
+import { AuthController } from './auth/auth.controller';
+import { AuthService } from './auth/auth.service';
+import { AuthModule } from './auth/auth.module';
 import typeorm from './config/typeorm';
 
 @Module({
@@ -23,8 +26,9 @@ import typeorm from './config/typeorm';
 			useFactory: async (configService: ConfigService) =>
 				configService.get('typeorm'),
 		}),
+		AuthModule,
 	],
-	controllers: [AppController],
-	providers: [AppService],
+	controllers: [AppController, AuthController],
+	providers: [AppService, AuthService],
 })
 export class AppModule {}
