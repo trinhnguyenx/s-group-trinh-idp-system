@@ -1,43 +1,55 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { LoginCredentials, TokenDto } from './interface';
-import { LoginDto } from './dto/login.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import {User} from '../user/entities/user.entity';
+import { Injectable } from '@nestjs/common';
+import { UsersService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcryptjs';
+import { User } from 'src/user/entities/user.entity';
+import * as bcrypt from 'bcrypt';
+import { config as dotenvConfig } from 'dotenv';
+dotenvConfig({ path: '.env' });
+
+
 
 @Injectable()
 export class AuthService {
-  constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-    private jwtService: JwtService,
-  ) {}
-  async login(loginDto: LoginDto): Promise<LoginCredentials> {
-    const { username, password } = loginDto;
-    const user = await this.userRepository.findOne({
-      where: {
-        username: username,
+	constructor(
+		private readonly userService: UsersService,
+		private jwtService: JwtService,
+	) {}
+	async validateUser(username: string, password: string): Promise<any> {
+		const user = await this.userService.findOneByUsername(username);
+		if (user && bcrypt.compare(password, user.password)) {
+			const { password, ...result } = user;
+			return result;
+		}
+		return null;
+	}
+
+
+  async login(user: User) {
+    const payLoad = {
+      username: user.username,
+      sub: {
+        fullname : user.fullname
+      }
+    };
+
+    return {
+      ...user,
+      access_token: this.jwtService.sign(payLoad),
+      refreshToken: this.jwtService.sign(payLoad, { expiresIn: '7d' }),
+
+    }
+
+  }
+  async refreshToken(user: User) {
+    const payload = {
+      username: user.username,
+      sub: {
+        fullname: user.fullname,
       },
-    });
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-      throw new UnauthorizedException('Invalid username or password');
-    }
-    const token = this.jwtService.sign({ id: user.id });
-    console.log(user.id, token);
-    const tokenDto: TokenDto = {
-      type: 'Bearer',
-      name: 'access_token',
-      value: token,
     };
-    const loginCredentials: LoginCredentials = {
-      tokens: [tokenDto],
+
+    return {
+      accessToken: this.jwtService.sign(payload),
     };
-    return loginCredentials;
   }
 }
