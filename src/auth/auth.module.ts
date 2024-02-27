@@ -9,19 +9,31 @@ import { TypeOrmModule } from '@nestjs/typeorm/dist/typeorm.module';
 import { UserModule } from 'src/user/user.module';
 import { JwtStrategy } from './strategies/jwt-strategy';
 import { RefreshJwtStrategy } from './strategies/refreshToken.strategy';
-require("dotenv").config();
-@Module({
-  controllers: [AuthController],
-  providers: [AuthService,JwtService,LocalStrategy,UsersService,RefreshJwtStrategy,JwtStrategy,UsersService],
-  imports : [
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '1h' },
-    }),
-    TypeOrmModule.forFeature([User]), 
-  ],
-  exports: [AuthService, JwtService] 
+import { Permission } from 'src/permission/entities/permission.entity';
+import { Role } from 'src/role/entities/role.entity';
+import { PermissionService } from 'src/permission/permission.service';
+import { RoleService } from 'src/role/role.service';
 
+
+@Module({
+	controllers: [AuthController],
+	providers: [
+		AuthService,
+		UsersService,
+		LocalStrategy,
+		JwtStrategy,
+		RefreshJwtStrategy,
+		UsersService,
+    JwtService,
+    PermissionService,
+    RoleService,
+	],
+	imports: [
+		// JwtModule.register({
+		// 	secret: '123456wqdqdq',
+		// 	signOptions: { expiresIn: '1h' },
+		// }),
+		TypeOrmModule.forFeature([User,Permission,Role]),
+	],
 })
 export class AuthModule {}
-

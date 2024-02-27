@@ -33,7 +33,10 @@ import { Permission } from './permission/entities/permission.entity';
       useFactory: async (configService: ConfigService) =>
         configService.get('typeorm'),
     }),
-    JwtModule.register({}),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+			signOptions: { expiresIn: '1h' },
+    }),
 	TypeOrmModule.forFeature([User, Role, Permission]), 
   ],
   controllers: [AppController, AuthController],
@@ -43,7 +46,6 @@ import { Permission } from './permission/entities/permission.entity';
     UsersService,
     PermissionService,
     RoleService,
-    JwtService, 
   ],
 })
 export class AppModule {}
