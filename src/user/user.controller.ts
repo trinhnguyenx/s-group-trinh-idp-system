@@ -13,16 +13,17 @@ import {
 import { UsersService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CustomAuthGuard} from '../auth/guards/jwt-auth.guard';
 @Controller('user')
 export class UserController {
 	constructor(private readonly userService: UsersService) {}
 	//@Public()
-	@SetMetadata('permissions', ['create user'])
+	// @SetMetadata('permissions', ['create user'])
 	@Post()
 	create(@Body() createUserDto: CreateUserDto) {
 		return this.userService.create(createUserDto);
 	}
-	// @UseGuards(PermissionGuard)
+	@UseGuards(CustomAuthGuard)
 	// @SetMetadata('permissions', ['read user'])
 	@Get()
 	findAll(

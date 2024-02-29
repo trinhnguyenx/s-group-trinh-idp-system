@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UseGuards } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Like, Repository } from 'typeorm';
@@ -22,12 +22,16 @@ export class UsersService {
 		) {
 			throw new NotFoundException('User already exists');
 		}
+		
 		const user = new User();
 		const salt = 10;
 		user.username = createUserDto.username;
 		user.password = await bcrypt.hash(createUserDto.password, salt);
 		user.fullname = createUserDto.fullname;
 		const savedUser = await this.userRepository.create(user);
+		if (!Array.isArray(createUserDto.role) || createUserDto.role.length === 0) {
+			throw new Error('Invalid or empty role data');
+		}
 		const roles: Role[] = [];
 		for (const roleId of createUserDto.role) {
 			const role = await this.roleRepository.findOneBy({ id: roleId });

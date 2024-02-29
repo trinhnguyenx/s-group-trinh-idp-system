@@ -6,13 +6,14 @@ import { JwtService, JwtModule } from '@nestjs/jwt';
 import { LocalStrategy } from './strategies/local-strategy';
 import { User } from 'src/user/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm/dist/typeorm.module';
-import { UserModule } from 'src/user/user.module';
 import { JwtStrategy } from './strategies/jwt-strategy';
 import { RefreshJwtStrategy } from './strategies/refreshToken.strategy';
 import { Permission } from 'src/permission/entities/permission.entity';
 import { Role } from 'src/role/entities/role.entity';
 import { PermissionService } from 'src/permission/permission.service';
 import { RoleService } from 'src/role/role.service';
+// import { APP_GUARD } from '@nestjs/core';
+// import { AuthGuard } from './guards/jwt-auth.guard';
 
 
 @Module({
@@ -24,15 +25,19 @@ import { RoleService } from 'src/role/role.service';
 		JwtStrategy,
 		RefreshJwtStrategy,
 		UsersService,
-    JwtService,
-    PermissionService,
-    RoleService,
+		JwtService,
+		PermissionService,
+		RoleService,
+		// {
+		// 	provide: APP_GUARD,
+		// 	useClass: AuthGuard,
+		// },
 	],
 	imports: [
-		// JwtModule.register({
-		// 	secret: '123456wqdqdq',
-		// 	signOptions: { expiresIn: '1h' },
-		// }),
+		JwtModule.register({
+			secret: process.env.JWT_SECRET,
+			signOptions: { expiresIn: '1h' },
+		}),
 		TypeOrmModule.forFeature([User,Permission,Role]),
 	],
 })

@@ -46,11 +46,11 @@ export class AuthService {
       permissions: userPermissions,
 
     };
-
+    const { password, ...userWithoutPassword } = userF;
     return {
-      ...userF,
-      access_token: await this.jwtService.signAsync(payLoad, {secret: 'test',expiresIn: '1h'}),
-      refreshToken: await this.jwtService.signAsync(payLoad, {secret: 'test',expiresIn: '7d'}),
+      ...userWithoutPassword,
+      access_token: await this.jwtService.signAsync(payLoad),
+      refreshToken: await this.jwtService.signAsync(payLoad, {expiresIn: '7d'}),
 
     }
 
