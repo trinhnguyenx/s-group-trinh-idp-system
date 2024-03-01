@@ -20,7 +20,7 @@ import { Permission } from './permission/entities/permission.entity';
 
 @Module({
   imports: [
-	AuthModule,
+	  AuthModule,
     UserModule,
     RoleModule,
     PermissionModule,
@@ -40,7 +40,6 @@ import { Permission } from './permission/entities/permission.entity';
 	TypeOrmModule.forFeature([User, Role, Permission]), 
   ],
   controllers: [AppController, AuthController],
-  // ...
 
   providers: [
     AppService,

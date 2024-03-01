@@ -17,14 +17,16 @@ import { CustomAuthGuard} from '../auth/guards/jwt-auth.guard';
 @Controller('user')
 export class UserController {
 	constructor(private readonly userService: UsersService) {}
-	//@Public()
-	// @SetMetadata('permissions', ['create user'])
+	//Post
+	@UseGuards(CustomAuthGuard)
+	@SetMetadata('roles', ['admin'])
 	@Post()
 	create(@Body() createUserDto: CreateUserDto) {
 		return this.userService.create(createUserDto);
 	}
+	//Get
 	@UseGuards(CustomAuthGuard)
-	// @SetMetadata('permissions', ['read user'])
+	@SetMetadata('roles', ['admin',"user"])
 	@Get()
 	findAll(
 		@Query('page') page: number,
@@ -34,17 +36,23 @@ export class UserController {
 	) {
 		return this.userService.findAll(page, limit, search, sort);
 	}
-	@SetMetadata('permissions', ['read user'])
+	//Get from id
+	@UseGuards(CustomAuthGuard)
+	@SetMetadata('roles', ['admin'])
 	@Get(':id')
 	findOne(@Param('id') id: number) {
 		return this.userService.findOneByID(id);
 	}
-	@SetMetadata('permissions', ['update user'])
+	// Update
+	@UseGuards(CustomAuthGuard)
+	@SetMetadata('roles', ['admin'])
 	@Patch(':id')
 	update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
 		return this.userService.update(+id, updateUserDto);
 	}
-	@SetMetadata('permissions', ['delete user'])
+	//Delete
+	@UseGuards(CustomAuthGuard)
+	@SetMetadata('roles', ['admin'])
 	@Delete(':id')
 	remove(@Param('id') id: string) {
 		return this.userService.remove(+id);

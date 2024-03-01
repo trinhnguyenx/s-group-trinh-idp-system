@@ -15,6 +15,7 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { AssignRoleDto } from './dto/assign-role.dto';
 
+
 @Controller('role')
 export class RoleController {
 	constructor(private readonly roleService: RoleService) {}

@@ -12,9 +12,8 @@ import { Permission } from 'src/permission/entities/permission.entity';
 import { Role } from 'src/role/entities/role.entity';
 import { PermissionService } from 'src/permission/permission.service';
 import { RoleService } from 'src/role/role.service';
-// import { APP_GUARD } from '@nestjs/core';
-// import { AuthGuard } from './guards/jwt-auth.guard';
-
+import { APP_GUARD } from '@nestjs/core';
+import { CustomAuthGuard } from './guards/jwt-auth.guard';
 
 @Module({
 	controllers: [AuthController],
@@ -28,10 +27,10 @@ import { RoleService } from 'src/role/role.service';
 		JwtService,
 		PermissionService,
 		RoleService,
-		// {
-		// 	provide: APP_GUARD,
-		// 	useClass: AuthGuard,
-		// },
+		{
+			provide: APP_GUARD,
+			useClass: CustomAuthGuard,
+		},
 	],
 	imports: [
 		JwtModule.register({
@@ -39,6 +38,7 @@ import { RoleService } from 'src/role/role.service';
 			signOptions: { expiresIn: '1h' },
 		}),
 		TypeOrmModule.forFeature([User,Permission,Role]),
+
 	],
 })
 export class AuthModule {}

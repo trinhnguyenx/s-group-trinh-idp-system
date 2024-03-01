@@ -3,26 +3,68 @@ import { Observable } from 'rxjs';
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
+import { SetMetadata } from '@nestjs/common';
+import { UsersService } from 'src/user/user.service';
+// import {IUser} from 'src/auth/interfaces/user.interface';
 
 
+export const Public = () => SetMetadata('isPublic', true);
 
 @Injectable()
 export class CustomAuthGuard implements CanActivate {
-    // constructor(
-	// 	private jwtService: JwtService,
-	// 	private reflector: Reflector,
-	// ) {}
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-    // Thực hiện xác thực ở đây, ví dụ kiểm tra token, quyền hạn, vv.
-    const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
-    if (!token) {
-        throw new UnauthorizedException();
+    constructor(
+        private jwtService: JwtService,
+        private reflector: Reflector,
+        private readonly userService: UsersService,
+
+    ) {}
+
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+        const isPublic = this.reflector.get<boolean>('isPublic', context.getHandler());
+        if (isPublic) {
+            // Nếu API được đánh dấu là public, bỏ qua xác thực
+            return true;
+        }
+    
+        const request = context.switchToHttp().getRequest();
+        const token = this.extractTokenFromHeader(request);
+        if (!token) {
+            throw new UnauthorizedException('Missing token');
+        }
+    
+        const roles = this.reflector.get<string[]>('roles', context.getHandler());
+        if (!roles) {
+            throw new UnauthorizedException('Roles not defined for this route');
+        }
+    
+        try {
+            const user = await this.jwtService.verifyAsync(token, { secret: process.env.JWT_SECRET });
+            if (!user) {
+                throw new UnauthorizedException('Invalid token');
+            }
+            const userF = await this.userService.findOneByUsername(user.username);
+            if (!userF) {
+                throw new UnauthorizedException('User not found');
+            }
+    
+            const roleStrings = userF.roles.map(role => role.name);
+            if (!this.checkUserRoles(roleStrings, roles)) {
+                throw new UnauthorizedException('Access denied');
+            }
+    
+            return true;
+        } catch (error) {
+            throw new UnauthorizedException('Invalid token');
+        }
     }
-    return true;
-  }
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
-}
+    
+
+    private extractTokenFromHeader(request: Request): string | undefined {
+        const [type, token] = request.headers.authorization?.split(' ') ?? [];
+        return type === 'Bearer' ? token : undefined;
+    }
+
+    private checkUserRoles(userRoles: string[], requiredRoles: string[]): boolean {
+        return userRoles.some(role => requiredRoles.includes(role));
+    }
 }
