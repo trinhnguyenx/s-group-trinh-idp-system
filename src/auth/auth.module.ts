@@ -14,7 +14,6 @@ import { PermissionService } from 'src/permission/permission.service';
 import { RoleService } from 'src/role/role.service';
 import { APP_GUARD } from '@nestjs/core';
 import { CustomAuthGuard } from './guards/jwt-auth.guard';
-
 @Module({
 	controllers: [AuthController],
 	providers: [

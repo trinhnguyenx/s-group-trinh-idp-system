@@ -5,7 +5,6 @@ import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
 import { SetMetadata } from '@nestjs/common';
 import { UsersService } from 'src/user/user.service';
-// import {IUser} from 'src/auth/interfaces/user.interface';
 
 
 export const Public = () => SetMetadata('isPublic', true);
@@ -33,6 +32,7 @@ export class CustomAuthGuard implements CanActivate {
         }
     
         const roles = this.reflector.get<string[]>('roles', context.getHandler());
+        console.log(roles);
         if (!roles) {
             throw new UnauthorizedException('Roles not defined for this route');
         }
