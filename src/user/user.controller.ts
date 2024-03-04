@@ -9,14 +9,25 @@ import {
 	SetMetadata,
 	UseGuards,
 	Query,
+	UseInterceptors,
+	Inject,
 } from '@nestjs/common';
 import { UsersService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { CustomAuthGuard} from '../auth/guards/jwt-auth.guard';
+import { CustomAuthGuard, Public } from '../auth/guards/jwt-auth.guard';
+import {
+	CacheModule,
+	CacheInterceptor,
+	CACHE_MANAGER,
+} from '@nestjs/cache-manager';
 @Controller('user')
 export class UserController {
-	constructor(private readonly userService: UsersService) {}
+	constructor(
+		private readonly userService: UsersService,
+		@Inject(CACHE_MANAGER) private cacheManager: CacheModule,
+	) {}
+
 	//Post
 	@UseGuards(CustomAuthGuard)
 	@SetMetadata('roles', ['admin'])
@@ -26,7 +37,7 @@ export class UserController {
 	}
 	//Get
 	@UseGuards(CustomAuthGuard)
-	@SetMetadata('roles', ['admin',"user"])
+	@SetMetadata('roles', ['admin'])
 	@Get()
 	findAll(
 		@Query('page') page: number,
@@ -39,8 +50,10 @@ export class UserController {
 	//Get from id
 	@UseGuards(CustomAuthGuard)
 	@SetMetadata('roles', ['admin'])
+	@Public()
 	@Get(':id')
 	findOne(@Param('id') id: number) {
+		console.log('Run here');
 		return this.userService.findOneByID(id);
 	}
 	// Update
@@ -57,4 +70,10 @@ export class UserController {
 	remove(@Param('id') id: string) {
 		return this.userService.remove(+id);
 	}
+	//
+	@Get(':userId/rights')
+  	async getUserRights(@Param('userId') userId: number) {
+      const rights = await this.userService.getRightsByUserId(userId);
+      return { rights };
+  }
 }

@@ -105,9 +105,26 @@ export class UsersService {
 		}
 		return await this.userRepository.remove(user);
 	}
+
 	async updateRoles(id: number, roles: Role[]): Promise<User> {
 		const user = await this.userRepository.findOneOrFail({ where: { id } });
 		this.userRepository.merge(user, { roles });
 		return await this.userRepository.save(user);
 	}
+	async getRightsByUserId(userId: number) {
+		const user = await this.userRepository.findOne({
+		  relations: ['roles', 'roles.permissions'],
+		  where: {
+			id: userId,
+		  },
+		});
+	
+		if (!user) {
+		  throw new NotFoundException('Missing user');
+		}
+	
+		return user.roles
+		  .map((role) => role.permissions.map((per) => per.name))
+		  .flat();
+	  }
 }

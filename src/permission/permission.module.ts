@@ -8,6 +8,10 @@ import { Role } from 'src/role/entities/role.entity';
 import { RoleModule } from 'src/role/role.module';
 import { User } from 'src/user/entities/user.entity';
 import { UserModule } from 'src/user/user.module';
+import { CustomAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import {JwtService} from '@nestjs/jwt';
+
+
 @Module({
 	imports: [
 		RoleModule,
@@ -15,6 +19,6 @@ import { UserModule } from 'src/user/user.module';
 		TypeOrmModule.forFeature([Permission, Role, User]),
 	],
 	controllers: [PermissionController],
-	providers: [PermissionService, RoleService],
+	providers: [PermissionService, RoleService, CustomAuthGuard, JwtService],
 })
 export class PermissionModule {}
