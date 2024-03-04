@@ -49,9 +49,8 @@ export class UserController {
 	}
 	//Get from id
 	@UseGuards(CustomAuthGuard)
-	// @SetMetadata('roles', ['admin'])
+	@SetMetadata('roles', ['admin'])
 	@Public()
-	@UseInterceptors(CacheInterceptor)
 	@Get(':id')
 	findOne(@Param('id') id: number) {
 		console.log('Run here');
@@ -71,15 +70,10 @@ export class UserController {
 	remove(@Param('id') id: string) {
 		return this.userService.remove(+id);
 	}
-	// demo set cache
-	@Get('set-cache')
-	async demoSetCache() {
-		await this.cacheManager.set('testcahe', 'hello world', { ttl: 10 });
-		return true;
-	}
-	// demo get cache
-	@Get('get-cache')
-	async demoGetCache() {
-		return this.cacheManager.get('testcahe');
-	}
+	//
+	@Get(':userId/rights')
+  	async getUserRights(@Param('userId') userId: number) {
+      const rights = await this.userService.getRightsByUserId(userId);
+      return { rights };
+  }
 }

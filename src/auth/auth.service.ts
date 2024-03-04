@@ -7,14 +7,13 @@ import {Ilogin} from './interfaces/login.interface';
 import { PermissionService } from 'src/permission/permission.service';
 
 
-
-
 @Injectable()
 export class AuthService {
 	constructor(
 		private readonly userService: UsersService,
 		private readonly jwtService: JwtService,
     private readonly permissionsService: PermissionService,
+
 
 	) {}
 	async validateUser(username: string, password: string): Promise<any> {
