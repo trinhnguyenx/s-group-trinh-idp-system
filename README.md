@@ -18,6 +18,19 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+## Running migrations
+# Chạy migration:run
+$ npm run migration:run
+
+# Tạo migration mới
+$ npm run migration:create -- tên_migration
+
+# Tạo migration tự động từ mô hình hiện tại
+$ npm run migration:generate -- tên_migration
+
+# Revert migration
+$ npm run migration:revert
+
 
 ## Test
 
