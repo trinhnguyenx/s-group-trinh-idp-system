@@ -14,6 +14,7 @@ export class RoleService {
 		private readonly roleRepository: Repository<Role>,
 		private readonly userServices: UsersService,
 	) {}
+	
 	async create(createRoleDto: CreateRoleDto) {
 		const role = this.roleRepository.create(createRoleDto);
 		return await this.roleRepository.save(role);

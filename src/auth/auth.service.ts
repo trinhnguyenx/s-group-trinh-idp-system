@@ -16,8 +16,8 @@ export class AuthService {
 
 
 	) {}
-	async validateUser(username: string, password: string): Promise<any> {
-		const user = await this.userService.findOneByUsername(username);
+	async validateUser(email: string, password: string): Promise<any> {
+		const user = await this.userService.findOneByemail(email);
 		if (user && bcrypt.compare(password, user.password)) {
 			const { password, ...result } = user;
 			return result;
@@ -27,43 +27,41 @@ export class AuthService {
 
 
   async login(user: Ilogin) {
-    const userF = await this.userService.findOneByUsername(user.username);
-    if (!userF) {
+    const userFind = await this.userService.findOneByemail(user.email);
+    if (!userFind) {
       throw UnauthorizedException;
     }
-    console.log(userF.roles);
+    console.log(userFind.roles);
 		const userPermissions =
 			await this.permissionsService.getPermissionByRolesName(
-				userF.roles.map((role) => role.name),
+				userFind.roles.map((role) => role.name),
 			);
     const payLoad = {
-      userID: userF.id,
-      username: userF.username,
+      id: userFind.id,
+      email: userFind.email,
+      username: userFind.username,
       sub: {
-        fullname : userF.fullname
+        fullname : userFind.fullname
       },
       permissions: userPermissions,
 
     };
-    const { password, ...userWithoutPassword } = userF;
+    const { password, ...userWithoutPassword } = userFind;
     return {
       ...userWithoutPassword,
       access_token: await this.jwtService.signAsync(payLoad),
-      refreshToken: await this.jwtService.signAsync(payLoad, {expiresIn: '7d'}),
+      refresh_token: await this.jwtService.signAsync(payLoad, {expiresIn: '7d'}),
 
     }
 
   }
-  async refreshToken(user: User) {
+  async refreshToken(token: string) {
     const payload = {
-      username: user.username,
-      sub: {
-        fullname: user.fullname,
-      },
+      token
     };
 
     return {
-      accessToken: await this.jwtService.signAsync(payload,{secret: 'test',expiresIn: '365d'}),
+      access_token: await this.jwtService.signAsync(payload,{expiresIn: '365d'}),
     };
   }
 }

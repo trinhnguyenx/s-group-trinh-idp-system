@@ -1,6 +1,5 @@
 import { Permission } from 'src/permission/entities/permission.entity';
 import { User } from 'src/user/entities/user.entity';
-//import { User } from 'src/user/entities/user.entity';
 import {
 	Column,
 	Entity,

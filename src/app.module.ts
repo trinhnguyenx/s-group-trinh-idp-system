@@ -17,6 +17,9 @@ import { AuthModule } from './auth/auth.module';
 import { User } from './user/entities/user.entity';
 import { Role } from './role/entities/role.entity';
 import { Permission } from './permission/entities/permission.entity';
+import { AuthorzationModule } from './authorzation/authorzation.module';
+import { Author } from './authorzation/entities/authorzation.entity';
+import { AuthorzationService } from './authorzation/authorzation.service';
 
 
 @Module({
@@ -24,6 +27,7 @@ import { Permission } from './permission/entities/permission.entity';
 	  AuthModule,
     UserModule,
     RoleModule,
+    AuthorzationModule,
     PermissionModule,
     ConfigModule.forRoot({
       isGlobal: true,
@@ -38,7 +42,7 @@ import { Permission } from './permission/entities/permission.entity';
       secret: process.env.JWT_SECRET,
 			signOptions: { expiresIn: '1h' },
     }),
-	TypeOrmModule.forFeature([User, Role, Permission]), 
+	TypeOrmModule.forFeature([User, Role, Permission,Author]),
   ],
   controllers: [AppController, AuthController],
 
@@ -48,6 +52,7 @@ import { Permission } from './permission/entities/permission.entity';
     UsersService,
     PermissionService,
     RoleService,
+    AuthorzationService,
   ],
 })
 export class AppModule {}

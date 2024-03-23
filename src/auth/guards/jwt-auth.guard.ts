@@ -11,6 +11,9 @@ export const Public = () => SetMetadata('isPublic', true);
 
 @Injectable()
 export class CustomAuthGuard implements CanActivate {
+    static extractTokenFromHeader(request: globalThis.Request) {
+        throw new Error('Method not implemented.');
+    }
     constructor(
         private jwtService: JwtService,
         private reflector: Reflector,
@@ -42,7 +45,7 @@ export class CustomAuthGuard implements CanActivate {
             if (!user) {
                 throw new UnauthorizedException('Invalid token');
             }
-            const userF = await this.userService.findOneByUsername(user.username);
+            const userF = await this.userService.findOneByemail(user.email);
             if (!userF) {
                 throw new UnauthorizedException('User not found');
             }
@@ -59,10 +62,10 @@ export class CustomAuthGuard implements CanActivate {
     }
     
 
-    private extractTokenFromHeader(request: Request): string | undefined {
-        const [type, token] = request.headers.authorization?.split(' ') ?? [];
-        return type === 'Bearer' ? token : undefined;
-    }
+        public extractTokenFromHeader(request: Request): string | undefined {
+            const [type, token] = request.headers.authorization?.split(' ') ?? [];
+            return type === 'Bearer' ? token : undefined;
+        }
 
     private checkUserRoles(userRoles: string[], requiredRoles: string[]): boolean {
         return userRoles.some(role => requiredRoles.includes(role));
