@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Role } from 'src/role/entities/role.entity';
 import * as bcrypt from 'bcrypt';
+import { UserFilterDTO } from './dto/filter-user.dto';
 @Injectable()
 export class UsersService {
 	constructor(
@@ -133,4 +134,32 @@ export class UsersService {
 			.map((role) => role.permissions.map((per) => per.name))
 			.flat();
 	}
+	async seedUsers(): Promise<void> {
+		const usersToCreate = 1000;
+		for (let i = 0; i < usersToCreate; i++) {
+		  const user: CreateUserDto = {
+			username: `user_${i}`,
+			fullname: `User ${i} Full Name`,
+			password: `password`,
+			email: `user${i}@example.com`,
+			role: [4],
+		  };
+		  console.log(user);
+		  await this.create(user);
+		}
+	}
+	async getUsersWithFilter(filterDTO: UserFilterDTO): Promise<User[]> {
+		const queryBuilder = this.userRepository.createQueryBuilder('user');
+	
+		if (filterDTO.username) {
+			queryBuilder.andWhere('user.username LIKE :username', { username: `%${filterDTO.username}%` });
+		}
+	
+		if (filterDTO.email) {
+			queryBuilder.andWhere('user.email LIKE :email', { email: `%${filterDTO.email}%` });
+		}
+	
+		return await queryBuilder.getMany();
+	}
+	
 }
