@@ -19,6 +19,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { CustomAuthGuard, Public } from '../auth/guards/jwt-auth.guard';
 import { IUser } from 'src/auth/interfaces/user.interface';
 import { JwtService } from '@nestjs/jwt';
+import { UserFilterDTO } from './dto/filter-user.dto';
+import { User } from './entities/user.entity';
 
 @Controller('user')
 export class UserController {
@@ -67,6 +69,13 @@ export class UserController {
 			return false;
 		}
 	}
+	// GET USERS WITH FILTER
+	@UseGuards(CustomAuthGuard)
+	@SetMetadata('roles', ['admin'])
+	@Get('filter')
+	async getUsers(@Query() filterDTO: UserFilterDTO): Promise<User[]> {
+		return await this.userService.getUsersWithFilter(filterDTO);
+	}
 	//Get from id
 	@UseGuards(CustomAuthGuard)
 	@SetMetadata('roles', ['admin'])
@@ -90,10 +99,9 @@ export class UserController {
 	remove(@Param('id') id: string) {
 		return this.userService.remove(+id);
 	}
-	//
-	// @Get(':userId/rights')
-	// async getUserRights(@Param('userId') userId: number) {
-	// 	const rights = await this.userService.getRightsByUserId(userId);
-	// 	return { rights };
-	// }
+	@Public()
+	@Post('seed')
+	async seedUsers(): Promise<void> {
+		await this.userService.seedUsers();
+	}
 }
