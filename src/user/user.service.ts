@@ -14,73 +14,79 @@ export class UsersService {
 		@InjectRepository(Role)
 		private readonly roleRepository: Repository<Role>,
 	) {}
+	//CREATE
 	async create(createUserDto: CreateUserDto) {
-		if (
-			await this.userRepository.findOne({
-				where: { username: createUserDto.username },
-			})
-		) {
+		const existingUser = await this.userRepository.findOne({
+			where: { email: createUserDto.email },
+		});
+		if (existingUser) {
 			throw new NotFoundException('User already exists');
 		}
-		
+
 		const user = new User();
 		const salt = 10;
+		user.email = createUserDto.email;
 		user.username = createUserDto.username;
 		user.password = await bcrypt.hash(createUserDto.password, salt);
 		user.fullname = createUserDto.fullname;
-		const savedUser = await this.userRepository.create(user);
-		if (!Array.isArray(createUserDto.role) || createUserDto.role.length === 0) {
-			throw new Error('Invalid or empty role data');
-		}
-		const roles: Role[] = [];
-		for (const roleId of createUserDto.role) {
-			const role = await this.roleRepository.findOneBy({ id: roleId });
-			if (!role) {
-				throw new Error(`Role with id ${roleId} not found`);
+
+		let defaultRole: Role | undefined;
+		if (!createUserDto.role || createUserDto.role.length === 0) {
+			defaultRole = await this.roleRepository.findOne({ where: { id: 2 } });
+			if (!defaultRole) {
+				throw new Error('Default role not found');
 			}
-			roles.push(role);
 		}
-		savedUser.roles = roles;
-		return this.userRepository.save(savedUser);
+
+		const roles: Role[] = [];
+		if (createUserDto.role && createUserDto.role.length > 0) {
+			for (const roleId of createUserDto.role) {
+				const role = await this.roleRepository.findOne({
+					where: { id: roleId },
+				});
+				if (!role) {
+					throw new Error(`Role with id ${roleId} not found`);
+				}
+				roles.push(role);
+			}
+		} else {
+			roles.push(defaultRole!);
+		}
+
+		user.roles = roles;
+
+		return this.userRepository.save(user);
 	}
 
 	async findAll(
 		page: number = 1,
-		limit: number = 10,
+		limit: number = 20,
 		search: string = '',
 		sort: string = 'ASC',
 	): Promise<User[]> {
-		// Tính toán offset dựa trên trang và giới hạn
 		const offset = (page - 1) * limit;
-
-		// Tạo một đối tượng chứa các điều kiện tìm kiếm và sắp xếp
 		const conditions = {
-			// Điều kiện tìm kiếm dựa trên search (ví dụ: tên người dùng)
 			where: {
+				email: Like(`%${search}%`),
 				username: Like(`%${search}%`),
 			},
-			// Sắp xếp theo username
 			order: {
-				username: sort.toUpperCase() as 'ASC' | 'DESC',
+				email: sort.toUpperCase() as 'ASC' | 'DESC',
 			},
-			// Giới hạn số lượng kết quả trả về
 			take: limit,
-			// Bỏ qua kết quả trước offset
 			skip: offset,
 		};
-
-		// Sử dụng repository để tìm kiếm người dùng dựa trên điều kiện và trả về kết quả
 		return await this.userRepository.find(conditions);
 	}
 
-	async findOneByUsername(username: string): Promise<User | undefined> {
+	async findOneByemail(email: string): Promise<User | undefined> {
 		return this.userRepository.findOne({
-			where: { username: username },
+			where: { email: email },
 			relations: ['roles'],
 		});
 	}
 
-	async findOneByID(ID: number): Promise<User | undefined> {
+	async findOneByID(ID: any): Promise<User | undefined> {
 		return this.userRepository.findOneBy({ id: ID });
 	}
 
@@ -113,18 +119,18 @@ export class UsersService {
 	}
 	async getRightsByUserId(userId: number) {
 		const user = await this.userRepository.findOne({
-		  relations: ['roles', 'roles.permissions'],
-		  where: {
-			id: userId,
-		  },
+			relations: ['roles', 'roles.permissions'],
+			where: {
+				id: userId,
+			},
 		});
-	
+
 		if (!user) {
-		  throw new NotFoundException('Missing user');
+			throw new NotFoundException('Missing user');
 		}
-	
+
 		return user.roles
-		  .map((role) => role.permissions.map((per) => per.name))
-		  .flat();
-	  }
+			.map((role) => role.permissions.map((per) => per.name))
+			.flat();
+	}
 }
